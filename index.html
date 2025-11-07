@@ -3,27 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three-form verbs test</title>
+  <title>Three-form verbs cloze test</title>
   <style>
     :root{
       --bg:#f6f8fb;
-      --card:#ffffff;
+      --card:#fff;
       --accent:#1f6feb;
       --ok:#d4f7dc;
       --bad:#ffd6d6;
       --muted:#556;
       --border:#e1e6ee;
-      --note:#0b2545;
     }
     body{
       margin:0;
       font-family:Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
       background:linear-gradient(180deg,#f0f5ff 0%,var(--bg) 100%);
-      color:var(--note);
-      padding:20px;
+      color:#0b2545;
+      padding:22px;
     }
-    .wrap{ max-width:900px; margin:0 auto; }
-    h1{ font-size:20px; margin:0 0 8px 0; }
+    .wrap{ max-width:980px; margin:0 auto; }
+    h1{ font-size:20px; margin:0 0 6px 0; }
     p.lead{ margin:0 0 14px 0; color:var(--muted); }
     .card{
       background:var(--card);
@@ -32,25 +31,18 @@
       padding:14px;
       box-shadow:0 6px 18px rgba(15,40,80,0.05);
     }
-    .verb{
-      border-bottom:1px dashed #eef2f7;
-      padding:12px 0;
+    .row{
       display:grid;
-      grid-template-columns: 1fr 160px;
+      grid-template-columns: 1fr 210px;
       gap:12px;
+      padding:12px 8px;
+      border-bottom:1px dashed #eef2f7;
       align-items:start;
     }
-    .verb:last-child{ border-bottom:0; }
-    .sentences{ line-height:1.6; }
-    .sentence{
-      margin:8px 0;
-      font-size:15px;
-    }
-    .inplace{
-      display:inline-block;
-      vertical-align:middle;
-      width:160px;
-    }
+    .row:last-child{ border-bottom:0; }
+    .verb-title{ font-weight:700; margin-bottom:6px; }
+    .sentence{ margin:6px 0; line-height:1.5; font-size:15px; }
+    .inplace{ display:inline-block; vertical-align:middle; width:170px; }
     input[type="text"]{
       width:100%;
       padding:6px 8px;
@@ -59,51 +51,42 @@
       border-radius:6px;
       box-sizing:border-box;
     }
-    .controls{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:flex-end;
-    }
-    .result{
+    .feedback{
+      font-size:13px;
       margin-top:8px;
-      font-size:14px;
-      font-weight:700;
-      text-align:right;
     }
     .field-ok{ background:var(--ok); border:1px solid #9fe7a9; }
     .field-bad{ background:var(--bad); border:1px solid #ff9a9a; }
     .correct-answer{
       display:inline-block;
-      margin-left:10px;
       padding:4px 8px;
       border-radius:6px;
       background:rgba(13,90,35,0.06);
       color:#084b26;
       font-weight:700;
       font-size:13px;
+      margin-left:6px;
     }
-    footer{ margin-top:14px; color:var(--muted); font-size:13px; text-align:left; }
-    @media (max-width:760px){
-      .verb{ grid-template-columns: 1fr; }
+    footer{ margin-top:14px; color:var(--muted); font-size:13px; }
+    @media (max-width:820px){
+      .row{ grid-template-columns: 1fr; }
       .inplace{ width:140px; }
-      .controls{ justify-content:flex-start; text-align:left; }
-      .result{ text-align:left; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Three-form verbs test</h1>
-    <p class="lead">Complete each sentence with the correct verb form. Each verb has two sentences: past simple and present perfect. Present perfect sentences include clear indicators (just, already, never, only, yet, recently, finally, ever). Type only the verb form required in each blank. Feedback appears automatically when you leave a field or press Enter.</p>
+    <h1>Three-form verbs cloze test</h1>
+    <p class="lead">Type the correct verb form into each blank. Past simple forms go in the first sentence, past participles (present perfect) in the second sentence. Feedback appears automatically when you leave a field or press Enter.</p>
 
     <div class="card" id="quiz"></div>
 
-    <footer>Verbs tested: be, begin, break, come, do, eat, go, have, know, leave, read, see, take, write, find.</footer>
+    <footer>Verbs: be, begin, break, come, do, eat, go, have, know, leave, read, see, take, write, find.</footer>
   </div>
 
   <script>
-    // Sentences const items = [
+    // Provided items (exact sentences you supplied)
+    const items = [
       {base:"be", pastSentence:"Yesterday he ______ at home all day.", perfSentence:"She has just ______ to the shop."},
       {base:"begin", pastSentence:"The meeting ______ at nine yesterday.", perfSentence:"They have already ______ their breakfast."},
       {base:"break", pastSentence:"He ______ his phone last week.", perfSentence:"I have recently ______ my glasses."},
@@ -121,157 +104,124 @@
       {base:"find", pastSentence:"She ______ a small coin in the middle of the busy street.", perfSentence:"We have finally ______ the answer to why schoolchildren are so loud."}
     ];
 
-    // Correct forms mapping
+    // Correct forms mapping (British English)
     const correctMap = {
-      "be": {past: ["was","were"], part: ["been"]},
-      "begin": {past: ["began"], part: ["begun"]},
-      "break": {past: ["broke"], part: ["broken"]},
-      "come": {past: ["came"], part: ["come"]},
-      "do": {past: ["did"], part: ["done"]},
-      "eat": {past: ["ate"], part: ["eaten"]},
-      "go": {past: ["went"], part: ["gone"]},
-      "have": {past: ["had"], part: ["had"]},
-      "know": {past: ["knew"], part: ["known"]},
-      "leave": {past: ["left"], part: ["left"]},
-      "read": {past: ["read"], part: ["read"]},
-      "see": {past: ["saw"], part: ["seen"]},
-      "take": {past: ["took"], part: ["taken"]},
-      "write": {past: ["wrote"], part: ["written"]},
-      "find": {past: ["found"], part: ["found"]}
+      "be": {past:["was","were"], part:["been"]},
+      "begin": {past:["began"], part:["begun"]},
+      "break": {past:["broke"], part:["broken"]},
+      "come": {past:["came"], part:["come"]},
+      "do": {past:["did"], part:["done"]},
+      "eat": {past:["ate"], part:["eaten"]},
+      "go": {past:["went"], part:["gone"]},
+      "have": {past:["had"], part:["had"]},
+      "know": {past:["knew"], part:["known"]},
+      "leave": {past:["left"], part:["left"]},
+      "read": {past:["read"], part:["read"]},
+      "see": {past:["saw"], part:["seen"]},
+      "take": {past:["took"], part:["taken"]},
+      "write": {past:["wrote"], part:["written"]},
+      "find": {past:["found"], part:["found"]}
     };
 
     const quiz = document.getElementById('quiz');
 
+    // Render rows
     items.forEach((it, idx) => {
-      const container = document.createElement('div');
-      container.className = 'verb';
-      container.id = `verb-${idx}`;
-
-      const pastInputId = `past-${idx}`;
-      const partInputId = `part-${idx}`;
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.id = `row-${idx}`;
 
       const left = document.createElement('div');
-      left.className = 'sentences';
-      left.innerHTML = `
-        <div class="sentence"><strong>${it.base}</strong></div>
-        <div class="sentence">Past simple: ${renderSentenceWithInput(it.pastSentence, pastInputId)}</div>
-        <div class="sentence">Present perfect: ${renderSentenceWithInput(it.perfSentence, partInputId)}</div>
-        <div class="result" id="result-${idx}" aria-live="polite"></div>
-      `;
+      left.innerHTML = `<div class="verb-title">${it.base}</div>
+        <div class="sentence">Past simple: ${renderInputInSentence(it.pastSentence, `past-${idx}`)}</div>
+        <div class="sentence">Present perfect: ${renderInputInSentence(it.perfSentence, `part-${idx}`)}</div>
+        <div class="feedback" id="fb-${idx}" aria-live="polite"></div>`;
 
       const right = document.createElement('div');
-      right.className = 'controls';
-      right.innerHTML = `<div class="result" id="side-result-${idx}"></div>`;
+      right.innerHTML = `<div style="text-align:right;color:var(--muted);font-size:13px;">Type the form and press Enter or leave the field to check.</div>`;
 
-      container.appendChild(left);
-      container.appendChild(right);
-      quiz.appendChild(container);
+      row.appendChild(left);
+      row.appendChild(right);
+      quiz.appendChild(row);
 
-      // Attach input event handlers for automatic checking
-      const pastEl = left.querySelector(`#${pastInputId}`);
-      const partEl = left.querySelector(`#${partInputId}`);
+      // Attach event listeners for automatic checking
+      const pastEl = document.getElementById(`past-${idx}`);
+      const partEl = document.getElementById(`part-${idx}`);
 
-      // Check when user leaves field (blur) or presses Enter; also check after short pause while typing (debounce)
-      let debounceTimerPast = null;
-      let debounceTimerPart = null;
+      let t1 = null, t2 = null;
+      pastEl.addEventListener('input', ()=>{ clearTimeout(t1); t1 = setTimeout(()=>checkRow(idx), 500); });
+      partEl.addEventListener('input', ()=>{ clearTimeout(t2); t2 = setTimeout(()=>checkRow(idx), 500); });
 
-      pastEl.addEventListener('blur', () => checkOne(idx));
-      partEl.addEventListener('blur', () => checkOne(idx));
+      pastEl.addEventListener('blur', ()=>checkRow(idx));
+      partEl.addEventListener('blur', ()=>checkRow(idx));
 
-      pastEl.addEventListener('input', () => {
-        clearTimeout(debounceTimerPast);
-        debounceTimerPast = setTimeout(() => checkOne(idx), 600);
-      });
-      partEl.addEventListener('input', () => {
-        clearTimeout(debounceTimerPart);
-        debounceTimerPart = setTimeout(() => checkOne(idx), 600);
-      });
-
-      // Enter submits current verb check
       [pastEl, partEl].forEach(el=>{
         el.addEventListener('keydown', (e)=>{
           if (e.key === 'Enter'){
             e.preventDefault();
-            checkOne(idx);
+            checkRow(idx);
           }
         });
       });
     });
 
-    // Helper to place input into sentence
-    function renderSentenceWithInput(sentence, inputId){
-      const blankMarkup = `<span class="inplace"><input type="text" id="${inputId}" autocomplete="off" spellcheck="false" /></span>`;
-      if (sentence.indexOf('______') !== -1){
-        return escapeHtml(sentence).replace('______', blankMarkup);
+    // Replace blank with input element
+    function renderInputInSentence(sentence, inputId){
+      const input = `<span class="inplace"><input type="text" id="${inputId}" autocomplete="off" spellcheck="false" /></span>`;
+      if (sentence.includes('______')) {
+        // escape then replace underscores placeholder
+        return escapeHtml(sentence).replace('______', input);
       } else {
-        return escapeHtml(sentence) + ' ' + blankMarkup;
+        return escapeHtml(sentence) + ' ' + input;
       }
     }
 
-    function normalize(s){
-      return String(s || '').trim().toLowerCase().replace(/\s+/g,' ');
-    }
-
+    function normalize(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
     function escapeHtml(s){
       return String(s)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#39;');
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // Check a single verb's inputs and show feedback immediately
-    function checkOne(idx){
+    // Check single row (both fields)
+    function checkRow(idx){
       const it = items[idx];
       const base = it.base;
       const pastEl = document.getElementById(`past-${idx}`);
       const partEl = document.getElementById(`part-${idx}`);
-      const resultEl = document.getElementById(`result-${idx}`);
-      const sideResultEl = document.getElementById(`side-result-${idx}`);
+      const fb = document.getElementById(`fb-${idx}`);
 
       const userPast = normalize(pastEl.value);
       const userPart = normalize(partEl.value);
 
-      const correctPast = correctMap[base].past.includes(userPast);
-      const correctPart = correctMap[base].part.includes(userPart);
+      const okPast = correctMap[base].past.includes(userPast);
+      const okPart = correctMap[base].part.includes(userPart);
 
       // Reset classes
       pastEl.classList.remove('field-ok','field-bad');
       partEl.classList.remove('field-ok','field-bad');
 
-      // Apply classes (empty counts as incorrect)
-      if (userPast.length === 0 || !correctPast) pastEl.classList.add('field-bad'); else pastEl.classList.add('field-ok');
-      if (userPart.length === 0 || !correctPart) partEl.classList.add('field-bad'); else partEl.classList.add('field-ok');
+      if (userPast.length === 0 || !okPast) pastEl.classList.add('field-bad'); else pastEl.classList.add('field-ok');
+      if (userPart.length === 0 || !okPart) partEl.classList.add('field-bad'); else partEl.classList.add('field-ok');
 
-      // Build feedback text
-      let messages = [];
-      if (correctPast && correctPart){
-        messages.push('<span style="color:#177a2f">Both forms correct.</span>');
+      // Build feedback
+      if (okPast && okPart){
+        fb.innerHTML = `<span style="color:#177a2f;font-weight:700">Both forms correct.</span>`;
       } else {
-        if (!correctPast){
-          const expectedPast = correctMap[base].past.join(' / ');
-          const shown = userPast ? escapeHtml(userPast) : '<em>(empty)</em>';
-          messages.push(`Past simple: ${shown} → correct: <span class="correct-answer">${escapeHtml(expectedPast)}</span>`);
+        let parts = [];
+        if (!okPast){
+          const expected = correctMap[base].past.join(' / ');
+          parts.push(`Past simple: ${userPast?escapeHtml(userPast):'<em>(empty)</em>'} → correct: <span class="correct-answer">${escapeHtml(expected)}</span>`);
         } else {
-          messages.push('Past simple: OK');
+          parts.push('Past simple: OK');
         }
-        if (!correctPart){
-          const expectedPart = correctMap[base].part.join(' / ');
-          const shown = userPart ? escapeHtml(userPart) : '<em>(empty)</em>';
-          messages.push(`Present perfect (past participle): ${shown} → correct: <span class="correct-answer">${escapeHtml(expectedPart)}</span>`);
+        if (!okPart){
+          const expectedP = correctMap[base].part.join(' / ');
+          parts.push(`Present perfect: ${userPart?escapeHtml(userPart):'<em>(empty)</em>'} → correct: <span class="correct-answer">${escapeHtml(expectedP)}</span>`);
         } else {
-          messages.push('Present perfect (past participle): OK');
+          parts.push('Present perfect: OK');
         }
-      }
-
-      resultEl.innerHTML = messages.join('<br>');
-      sideResultEl.innerHTML = (correctPast && correctPart) ? '<span style="color:#177a2f">OK</span>' : '';
-
-      // Focus first incorrect field if both answered and some incorrect
-      if ((userPast.length > 0 || userPart.length > 0) && !(correctPast && correctPart)){
-        const firstBad = document.querySelector(`#verb-${idx} .field-bad`);
-        if (firstBad) firstBad.focus();
+        fb.innerHTML = parts.join('<br>');
       }
     }
   </script>
