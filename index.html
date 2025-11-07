@@ -36,7 +36,7 @@
       border-bottom:1px dashed #eef2f7;
       padding:12px 0;
       display:grid;
-      grid-template-columns: 1fr 120px;
+      grid-template-columns: 1fr 160px;
       gap:12px;
       align-items:start;
     }
@@ -63,26 +63,13 @@
       display:flex;
       gap:8px;
       align-items:center;
-    }
-    button{
-      background:var(--accent);
-      color:#fff;
-      border:0;
-      padding:8px 10px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .btn-secondary{
-      background:#fff;
-      color:var(--accent);
-      border:1px solid var(--accent);
-      box-shadow:none;
+      justify-content:flex-end;
     }
     .result{
       margin-top:8px;
       font-size:14px;
       font-weight:700;
+      text-align:right;
     }
     .field-ok{ background:var(--ok); border:1px solid #9fe7a9; }
     .field-bad{ background:var(--bad); border:1px solid #ff9a9a; }
@@ -96,17 +83,19 @@
       font-weight:700;
       font-size:13px;
     }
-    footer{ margin-top:14px; color:var(--muted); font-size:13px; }
-    @media (max-width:700px){
+    footer{ margin-top:14px; color:var(--muted); font-size:13px; text-align:left; }
+    @media (max-width:760px){
       .verb{ grid-template-columns: 1fr; }
       .inplace{ width:140px; }
+      .controls{ justify-content:flex-start; text-align:left; }
+      .result{ text-align:left; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Three-form verbs test</h1>
-    <p class="lead">Complete each sentence with the correct verb form. Each verb has two sentences: past simple and present perfect. Type only the verb form required in each blank and press the Submit button for that verb to check your answers immediately.</p>
+    <p class="lead">Complete each sentence with the correct verb form. Each verb has two sentences: past simple and present perfect. Present perfect sentences include clear indicators (just, already, never, only, yet, recently, finally, ever). Type only the verb form required in each blank. Feedback appears automatically when you leave a field or press Enter.</p>
 
     <div class="card" id="quiz"></div>
 
@@ -114,27 +103,26 @@
   </div>
 
   <script>
-    // Verbs and two sentence templates (past simple; present perfect)
-    // Sentences include a blank where an input will be placed.
+    // Sentences with clear present-perfect indicators
     const items = [
-      {base:"be", pastSentence:"Yesterday he ______ at home all day.", perfSentence:"She ______ to that school several times."},
-      {base:"begin", pastSentence:"The meeting ______ at nine yesterday.", perfSentence:"They ______ the project this month."},
-      {base:"break", pastSentence:"He ______ his phone last week.", perfSentence:"I ______ my glasses many times."},
-      {base:"come", pastSentence:"She ______ back late last night.", perfSentence:"We ______ to London twice this year."},
-      {base:"do", pastSentence:"He ______ his homework before dinner.", perfSentence:"I ______ that task already."},
-      {base:"eat", pastSentence:"They ______ all the biscuits yesterday.", perfSentence:"She ______ sushi before."},
-      {base:"go", pastSentence:"I ______ to the market on Saturday.", perfSentence:"He ______ to Spain several times."},
-      {base:"have", pastSentence:"She ______ a good time at the party.", perfSentence:"We ______ three meetings so far."},
-      {base:"know", pastSentence:"He ______ the answer yesterday.", perfSentence:"I ______ her for many years."},
-      {base:"leave", pastSentence:"They ______ the station at six.", perfSentence:"She ______ the office already."},
-      {base:"read", pastSentence:"I ______ that novel last month.", perfSentence:"He ______ that article already."},
-      {base:"see", pastSentence:"We ______ the show on Friday.", perfSentence:"I ______ that film before."},
-      {base:"take", pastSentence:"She ______ the photo yesterday.", perfSentence:"They ______ several photographs this year."},
-      {base:"write", pastSentence:"He ______ the letter yesterday.", perfSentence:"I ______ three emails today."},
-      {base:"find", pastSentence:"She ______ a small coin on the path.", perfSentence:"We ______ the answer at last."}
+      {base:"be", pastSentence:"Yesterday he ______ at home all day.", perfSentence:"She has just ______ to that school."},
+      {base:"begin", pastSentence:"The meeting ______ at nine yesterday.", perfSentence:"They have already ______ the project this month."},
+      {base:"break", pastSentence:"He ______ his phone last week.", perfSentence:"I have recently ______ my glasses."},
+      {base:"come", pastSentence:"She ______ back late last night.", perfSentence:"We have just ______ back to London."},
+      {base:"do", pastSentence:"He ______ his homework before dinner.", perfSentence:"I have already ______ that task."},
+      {base:"eat", pastSentence:"They ______ all the biscuits yesterday.", perfSentence:"She has just ______ sushi."},
+      {base:"go", pastSentence:"I ______ to the market on Saturday.", perfSentence:"He has already ______ to Spain."},
+      {base:"have", pastSentence:"She ______ a good time at the party.", perfSentence:"We have only ______ three meetings so far."},
+      {base:"know", pastSentence:"He ______ the answer yesterday.", perfSentence:"I have always ______ her."},
+      {base:"leave", pastSentence:"They ______ the station at six.", perfSentence:"She has already ______ the office."},
+      {base:"read", pastSentence:"I ______ that novel last month.", perfSentence:"He has just ______ that article."},
+      {base:"see", pastSentence:"We ______ the show on Friday.", perfSentence:"I have never ______ that film before."},
+      {base:"take", pastSentence:"She ______ the photo yesterday.", perfSentence:"They have already ______ several photographs."},
+      {base:"write", pastSentence:"He ______ the letter yesterday.", perfSentence:"I have just ______ three emails today."},
+      {base:"find", pastSentence:"She ______ a small coin on the path.", perfSentence:"We have finally ______ the answer."}
     ];
 
-    // Allowed correct answers per verb: past simple (array), past participle (array)
+    // Correct forms mapping
     const correctMap = {
       "be": {past: ["was","were"], part: ["been"]},
       "begin": {past: ["began"], part: ["begun"]},
@@ -153,7 +141,6 @@
       "find": {past: ["found"], part: ["found"]}
     };
 
-    // Build quiz HTML
     const quiz = document.getElementById('quiz');
 
     items.forEach((it, idx) => {
@@ -161,7 +148,6 @@
       container.className = 'verb';
       container.id = `verb-${idx}`;
 
-      // Create sentence elements with inputs inserted inline
       const pastInputId = `past-${idx}`;
       const partInputId = `part-${idx}`;
 
@@ -176,43 +162,57 @@
 
       const right = document.createElement('div');
       right.className = 'controls';
-      right.innerHTML = `
-        <button type="button" id="check-${idx}">Submit</button>
-        <button type="button" class="btn-secondary" id="reveal-${idx}">Show answer</button>
-      `;
+      right.innerHTML = `<div class="result" id="side-result-${idx}"></div>`;
 
       container.appendChild(left);
       container.appendChild(right);
       quiz.appendChild(container);
 
-      // attach events
-      document.addEventListener('click', function(e){
-        if (e.target && e.target.id === `check-${idx}`){
-          checkOne(idx);
-        } else if (e.target && e.target.id === `reveal-${idx}`){
-          revealOne(idx);
-        }
+      // Attach input event handlers for automatic checking
+      const pastEl = left.querySelector(`#${pastInputId}`);
+      const partEl = left.querySelector(`#${partInputId}`);
+
+      // Check when user leaves field (blur) or presses Enter; also check after short pause while typing (debounce)
+      let debounceTimerPast = null;
+      let debounceTimerPart = null;
+
+      pastEl.addEventListener('blur', () => checkOne(idx));
+      partEl.addEventListener('blur', () => checkOne(idx));
+
+      pastEl.addEventListener('input', () => {
+        clearTimeout(debounceTimerPast);
+        debounceTimerPast = setTimeout(() => checkOne(idx), 600);
+      });
+      partEl.addEventListener('input', () => {
+        clearTimeout(debounceTimerPart);
+        debounceTimerPart = setTimeout(() => checkOne(idx), 600);
+      });
+
+      // Enter submits current verb check
+      [pastEl, partEl].forEach(el=>{
+        el.addEventListener('keydown', (e)=>{
+          if (e.key === 'Enter'){
+            e.preventDefault();
+            checkOne(idx);
+          }
+        });
       });
     });
 
-    // Helper: render sentence string but replace the first occurrence of "______" or "_____" with an input.
+    // Helper to place input into sentence
     function renderSentenceWithInput(sentence, inputId){
-      // If sentence contains "______", replace it; otherwise append input at end separated by space.
       const blankMarkup = `<span class="inplace"><input type="text" id="${inputId}" autocomplete="off" spellcheck="false" /></span>`;
       if (sentence.indexOf('______') !== -1){
         return escapeHtml(sentence).replace('______', blankMarkup);
       } else {
-        // place input where two underscores appear or create one at end
         return escapeHtml(sentence) + ' ' + blankMarkup;
       }
     }
 
-    // Normalize input
     function normalize(s){
       return String(s || '').trim().toLowerCase().replace(/\s+/g,' ');
     }
 
-    // Escape HTML
     function escapeHtml(s){
       return String(s)
         .replace(/&/g,'&amp;')
@@ -222,13 +222,14 @@
         .replace(/'/g,'&#39;');
     }
 
-    // Check a single verb (both inputs); provides immediate feedback for that verb only
+    // Check a single verb's inputs and show feedback immediately
     function checkOne(idx){
       const it = items[idx];
       const base = it.base;
       const pastEl = document.getElementById(`past-${idx}`);
       const partEl = document.getElementById(`part-${idx}`);
       const resultEl = document.getElementById(`result-${idx}`);
+      const sideResultEl = document.getElementById(`side-result-${idx}`);
 
       const userPast = normalize(pastEl.value);
       const userPart = normalize(partEl.value);
@@ -236,22 +237,15 @@
       const correctPast = correctMap[base].past.includes(userPast);
       const correctPart = correctMap[base].part.includes(userPart);
 
-      // reset classes
+      // Reset classes
       pastEl.classList.remove('field-ok','field-bad');
       partEl.classList.remove('field-ok','field-bad');
 
-      if (userPast.length === 0 || !correctPast){
-        pastEl.classList.add('field-bad');
-      } else {
-        pastEl.classList.add('field-ok');
-      }
-      if (userPart.length === 0 || !correctPart){
-        partEl.classList.add('field-bad');
-      } else {
-        partEl.classList.add('field-ok');
-      }
+      // Apply classes (empty counts as incorrect)
+      if (userPast.length === 0 || !correctPast) pastEl.classList.add('field-bad'); else pastEl.classList.add('field-ok');
+      if (userPart.length === 0 || !correctPart) partEl.classList.add('field-bad'); else partEl.classList.add('field-ok');
 
-      // Build feedback
+      // Build feedback text
       let messages = [];
       if (correctPast && correctPart){
         messages.push('<span style="color:#177a2f">Both forms correct.</span>');
@@ -273,44 +267,14 @@
       }
 
       resultEl.innerHTML = messages.join('<br>');
-      // focus first bad input
-      const firstBad = document.querySelector(`#verb-${idx} .field-bad`);
-      if (firstBad) firstBad.focus();
-    }
+      sideResultEl.innerHTML = (correctPast && correctPart) ? '<span style="color:#177a2f">OK</span>' : '';
 
-    // Reveal answers for a single verb (fills inputs and marks ok)
-    function revealOne(idx){
-      const it = items[idx];
-      const base = it.base;
-      const pastEl = document.getElementById(`past-${idx}`);
-      const partEl = document.getElementById(`part-${idx}`);
-      pastEl.value = correctMap[base].past.join(' / ');
-      partEl.value = correctMap[base].part.join(' / ');
-      pastEl.classList.remove('field-bad'); pastEl.classList.add('field-ok');
-      partEl.classList.remove('field-bad'); partEl.classList.add('field-ok');
-      document.getElementById(`result-${idx}`).innerHTML = '<span style="color:#177a2f;font-weight:700">Answers revealed</span>';
-    }
-
-    // Allow Enter to submit current verb when focus is inside one of its inputs
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Enter'){
-        const active = document.activeElement;
-        if (active && active.tagName === 'INPUT'){
-          e.preventDefault();
-          // find parent verb id
-          let node = active;
-          while (node && node.id && !node.id.startsWith('verb-')){
-            node = node.parentElement;
-          }
-          // alternative: traverse up to .verb
-          node = active.closest('.verb');
-          if (node){
-            const id = node.id.split('-')[1];
-            if (id !== undefined) checkOne(Number(id));
-          }
-        }
+      // Focus first incorrect field if both answered and some incorrect
+      if ((userPast.length > 0 || userPart.length > 0) && !(correctPast && correctPart)){
+        const firstBad = document.querySelector(`#verb-${idx} .field-bad`);
+        if (firstBad) firstBad.focus();
       }
-    });
+    }
   </script>
 </body>
 </html>
